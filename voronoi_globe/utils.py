@@ -65,7 +65,7 @@ def unwrap_lon(x):
         return -(360-x)
     return x
 
-def check_voronoi_tiles(gdf, iprint=False, parallel=True):
+def check_voronoi_tiles(gdf, iprint=False):
     """Check Voronoi tiles to make sure that they are consistent.
 
     This will take any asymmetric pair of tiles (where one considers the other to be
@@ -76,7 +76,6 @@ def check_voronoi_tiles(gdf, iprint=False, parallel=True):
     ----------
     gdf : geopandas.GeoDataFrame
     iprint : bool, False
-    parallel : bool, False
 
     Returns
     -------
@@ -101,68 +100,21 @@ def check_voronoi_tiles(gdf, iprint=False, parallel=True):
                 gdf.loc[n,'neighbors'] = ', '.join(new_neighbors)
                 n_inconsis += 1
     if iprint: print("Done with correcting asymmetric neighbors.")
+    return gdf, n_inconsis
 
-    # check overlap with all of africa
+def check_overlap(gdf, iprint=False):
+    """Check overlap with all of africa."""
+
     # load africa
-    africa = gpd.read_file(f'./africa_countries/afr_g2014_2013_0.shp')
+    africa = gpd.read_file('./continent-poly/Africa_main.shp')
     assert africa.crs.name=='WGS 84'
     
-    # drop island countries
-    countries_to_drop = ['Cape Verde', 'Mauritius', 'Seychelles']
-    keepix = np.ones(len(africa), dtype=bool)
-    for c in countries_to_drop:
-        keepix[africa['ADM0_NAME']==c] = False
-    africa = africa.loc[keepix]
-
-    # for each country check that intersection w/ voronoi area is very
-    # close to total country, but these will not always be the same
-    # b/c of precision error creating gaps or overlap btwn voronoi cells
-    def loop_wrapper(args):
-        i, country = args
-        assert np.isclose(voronoi_cov.intersection(country.geometry).area, country.geometry.area,
-                          rtol=1e-3), (i, country)
+    # check that intersection w/ voronoi area is very close to total area
+    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area for i in gdf['geometry']]),
+                      africa.geometry.area,
+                      rtol=1e-3)
     
-    if parallel:
-        with Pool() as pool:
-            # union voronoi cells
-            voronoi_cov = gdf.iloc[0].geometry
-            for i in range(1, len(gdf)):
-                voronoi_cov = voronoi_cov.union(gdf.iloc[i].geometry)
-            voronoi_cov = gpd.GeoSeries(voronoi_cov)
-            try:
-                pool.map(loop_wrapper, africa.iterrows())
-            except TopologicalError:
-                gdf['geometry'] = gdf['geometry'].apply(lambda x:wkt.loads(wkt.dumps(x,
-                                                                  rounding_precision=8)))
-                # union voronoi cells
-                voronoi_cov = gdf.iloc[0].geometry
-                for i in range(1, len(gdf)):
-                    voronoi_cov = voronoi_cov.union(gdf.iloc[i].geometry)
-                voronoi_cov = gpd.GeoSeries(voronoi_cov)
-                pool.map(loop_wrapper, africa.iterrows())
-    else:
-        try:
-            # union voronoi cells
-            voronoi_cov = gdf.iloc[0].geometry
-            for i in range(1, len(gdf)):
-                voronoi_cov = voronoi_cov.union(gdf.iloc[i].geometry)
-            voronoi_cov = gpd.GeoSeries(voronoi_cov)
-            for args in africa.iterrows():
-                loop_wrapper(args)
-        except TopologicalError:
-            gdf['geometry'] = gdf['geometry'].apply(lambda x:wkt.loads(wkt.dumps(x,
-                                                                rounding_precision=8)))
-            # union voronoi cells
-            voronoi_cov = gdf.iloc[0].geometry
-            for i in range(1, len(gdf)):
-                voronoi_cov = voronoi_cov.union(gdf.iloc[i].geometry)
-            voronoi_cov = gpd.GeoSeries(voronoi_cov)
-            for args in africa.iterrows():
-                loop_wrapper(args)
- 
     if iprint: print("Done with checking overlap with Africa.")
-
-    return gdf, n_inconsis
 
 def check_poisson_disc(poissd, min_dx):
     """Check PoissonDiscSphere grid.

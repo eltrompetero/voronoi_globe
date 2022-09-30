@@ -77,7 +77,8 @@ def polygonize(iter_pairs=None):
         polygons['neighbors'] = neighbors
 
         # correct errors
-        polygons, n_inconsis = check_voronoi_tiles(polygons, parallel=False)
+        polygons, n_inconsis = check_voronoi_tiles(polygons)
+        check_overlap(polygons)
 
         # save
         polygons.to_file(f'voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
@@ -129,6 +130,7 @@ def revise_neighbors(dx, gridix, write=True):
     polygons['neighbors'] = neighbors
 
     polygons, n_inconsis = check_voronoi_tiles(polygons)
+    check_overlap(polygons)
     if n_inconsis:
         print(f"There are {n_inconsis} asymmetric pairs that were corrected.")
     

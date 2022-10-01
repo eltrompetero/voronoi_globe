@@ -1701,6 +1701,7 @@ class VoronoiCell():
             thisV = vertices[0]
             thisVix = 0
             sortix, checkResult = self._third_edge(thisV, pts, closeptsIx)
+            assert len(self.edges)==3
         except AssertionError:  # try other vertex
             thisV = vertices[1]
             thisVix = 1
@@ -1773,7 +1774,7 @@ class VoronoiCell():
         sortix = np.argsort(checkResult)
         return sortix, checkResult
 
-    def _check_pt(self, pt, posPlane, d, min_d=1e-2):
+    def _check_pt(self, pt, posPlane, d, min_d=1e-5):
         """Return distance to pt if it is on positive side of plane and within
         distance d of center; otherwise, return np.inf.
         """

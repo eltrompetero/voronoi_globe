@@ -1705,7 +1705,12 @@ class VoronoiCell():
         except AssertionError:  # try other vertex
             thisV = vertices[1]
             thisVix = 1
-            sortix, checkResult = self._third_edge(thisV, pts, closeptsIx)
+            try:
+                sortix, checkResult = self._third_edge(thisV, pts, closeptsIx)
+            except AssertionError:
+                # if this fails, it is possibly b/c the first vertex that is made is very
+                # close to the polygon center
+                sortix, checkResult = self._third_edge(thisV, pts, closeptsIx, distance_mult=10)
         
         # build bounding "lip" as a starting point, i.e. two bounding edges looking like a
         # "lip"
@@ -1730,7 +1735,7 @@ class VoronoiCell():
         
         return sorted(closeptsIx + [sortix[i]])
     
-    def _third_edge(self, thisV, pts, closeptsIx):
+    def _third_edge(self, thisV, pts, closeptsIx, distance_mult=4):
         """Check for any points that are on the same side as the center relative to
         the plane going thru thisV and is not so far away from the center of the
         polygon, defined as being more than 4x the distance between thisV and
@@ -1752,6 +1757,9 @@ class VoronoiCell():
         pts : list of SphereCoordinate
         closeptsIx
             Indices of closest two points on spherical surface.
+        distance_mult : float, 4
+            Smaller is better for reducing number of points to check in general, but
+            it will not work in all cases.
 
         Returns
         -------
@@ -1763,7 +1771,7 @@ class VoronoiCell():
         """
 
         posPlane = GreatCircle.ortho(SphereCoordinate(thisV), self.center)
-        mult_of_d = self.center.geo_dist(thisV) * 4
+        mult_of_d = self.center.geo_dist(thisV) * distance_mult
         checkResult = [self._check_pt(pt, posPlane, mult_of_d) for pt in pts]
         # ignore the two closest points, which should be used for the bounding lip
         checkResult[closeptsIx[0]] = np.inf

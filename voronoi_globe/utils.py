@@ -312,6 +312,39 @@ def convex_hull(xy, recursive=False, concatenate_first=False):
 
     return sortix[hull]
 
+@njit
+def _boundaries_diag_cut_out(xy, xy1, xy2):
+    """Used by convex_hull() to find points that are above or below the line passing thru
+    xy1 and xy2.
+    
+    Parameters
+    ----------
+    xy : ndarray
+        Points to test.
+    xy1 : ndarray
+        Origin point.
+    xy2 : ndarray
+        Next point in clockwise direction.
+
+    Returns
+    -------
+    function
+    """
+    
+    if xy2[0]==xy1[0]:
+        return np.zeros(len(xy))==1
+    dydx = (xy2[1]-xy1[1])/(xy2[0]-xy1[0])
+    if xy1[0]<=xy2[0] and xy1[1]<=xy2[1]:
+        return xy[:,1]>(dydx*(xy[:,0]-xy1[0])+xy1[1])
+    elif xy1[0]<=xy2[0] and xy1[1]>=xy2[1]:
+        return xy[:,1]>(dydx*(xy[:,0]-xy1[0])+xy1[1])
+    elif xy1[0]>=xy2[0] and xy1[1]>=xy2[1]:
+        return xy[:,1]<(dydx*(xy[:,0]-xy1[0])+xy1[1])
+    #elif xy1[0]>=xy2[0] and xy1[1]<=xy2[1]:
+    else:
+        return xy[:,1]<(dydx*(xy[:,0]-xy1[0])+xy1[1])
+    #else: raise Exception
+
 @njit(cache=True)
 def ind_to_sub(n, ix):
     """Convert index from flattened upper triangular matrix to pair subindex.
@@ -432,7 +465,7 @@ def latlon2angle(*args):
     """
     Parameters
     ----------
-    lonlat as one or lon,lat
+    latlon as one tuple or separate as lat, lon
     """
 
     if len(args)==2:

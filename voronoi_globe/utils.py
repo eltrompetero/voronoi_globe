@@ -103,14 +103,23 @@ def check_voronoi_tiles(gdf, iprint=False):
     return gdf, n_inconsis
 
 def check_overlap(gdf, iprint=False):
-    """Check overlap with all of africa."""
+    """Check overlap with all of africa.
+
+    Parameters
+    ----------
+    iprint : bool, False
+    """
 
     # load africa
     africa = gpd.read_file('./continent-poly/Africa_main.shp')
     assert africa.crs.name=='WGS 84'
+
+    # project to a flat projection that preserves area, Equal Area Cylindrical
+    africa = africa.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area for i in gdf['geometry']]),
+    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area for i in
+        gdf['geometry'].to_crs('+proj=cea')]),
                       africa.geometry.area,
                       rtol=1e-3)
     

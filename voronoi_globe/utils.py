@@ -312,6 +312,104 @@ def convex_hull(xy, recursive=False, concatenate_first=False):
 
     return sortix[hull]
 
+def _sort_by_phi(xy):
+    """Sort points in play by angle in counterclockwise direction. With unique angles.
+    """
+
+    phi = np.arctan2(xy[:,1], xy[:,0])
+
+    # if angle repeats, remove coordinate with smaller radius
+    if phi.size>np.unique(phi).size:
+        _, invIx = np.unique(phi, return_inverse=True)
+        ixToRemove = []
+        # for every element of phi that repeats
+        for ix in np.where(np.bincount(invIx)>1)[0]:
+            # take larger radius
+            r = np.linalg.norm(xy[invIx==ix], axis=1)
+            mxix = r.argmax()
+            remIx = np.where(invIx==ix)[0].tolist()
+            remIx.pop(mxix)
+            ixToRemove += remIx
+        
+        # remove duplicates
+        keepix = np.delete(range(phi.size), ixToRemove)
+
+        sortix = keepix[np.argsort(phi[keepix])]
+        return sortix
+
+    return np.argsort(phi)
+
+def _check_between_triplet(xy):
+    """Used by convex_hull().
+
+    Sequentially checks between sets of three points that have been ordered in the
+    clockwise direction (Graham algorithm).
+    
+    Parameters
+    ----------
+    xy : ndarray
+        List of Cartesian coordinates. First point must belong to convex hull.
+
+    Returns
+    -------
+    list
+        Ordered list of indices of xy that are in convex hull.
+    """
+    
+    hull = list(range(len(xy)))
+    k = 0
+    # end loop once we can traverse hull without eliminating points
+    allChecked = 0
+    while allChecked<len(hull):
+        if _boundaries_diag_cut_out(xy[hull[(k+1)%len(hull)]][None,:],
+                                    xy[hull[k%len(hull)]],
+                                    xy[hull[(k+2)%len(hull)]])[0]:
+            k += 1
+            allChecked += 1
+        else:
+            # remove element that forms a concave angle with next neighbors
+            hull.pop((k+1)%len(hull))
+            k -= 1
+            allChecked = 0
+    return hull
+
+def _check_between_pair(xy, ix1, ix2, possible_xy, chain):
+    """Used by convex_hull().
+
+    Recursively check between initial set of pairs and append results into chain such that
+    chain can be read sequentially to yield a clockwise path around the hull..
+    
+    Parameters
+    ----------
+    xy : ndarray
+        List of coordinates.
+    ix1 : int
+    ix2 : int
+    possible_xy: ndarray
+        List of indices.
+    chain : list
+        Growing list of points on convex hull.
+    """
+    
+    pointsToCheck = possible_xy[_boundaries_diag_cut_out(xy[possible_xy], xy[ix1], xy[ix2])]
+    if len(pointsToCheck)==1:
+        chain.append((ix1, pointsToCheck[0]))
+        chain.append((pointsToCheck[0], ix2))
+        return
+    if len(pointsToCheck)==0:
+        chain.append((ix1, ix2))
+        return
+    
+    # take the point that's furthest from the line passing thru xy1 and xy2
+    xy1 = xy[ix1]
+    xy2 = xy[ix2]
+    furthestix = np.abs((xy2[1]-xy1[1])*xy[pointsToCheck][:,0]-
+                        (xy2[0]-xy1[0])*xy[pointsToCheck][:,1]+
+                        xy2[0]*xy1[1]-xy2[1]*xy1[0]).argmax()
+
+    _check_between_pair(xy, ix1, pointsToCheck[furthestix], pointsToCheck, chain),
+    _check_between_pair(xy, pointsToCheck[furthestix], ix2, pointsToCheck, chain)
+
 @njit
 def _boundaries_diag_cut_out(xy, xy1, xy2):
     """Used by convex_hull() to find points that are above or below the line passing thru

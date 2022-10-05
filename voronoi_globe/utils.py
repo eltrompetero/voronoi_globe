@@ -118,10 +118,10 @@ def check_overlap(gdf, iprint=False):
     africa = africa.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area for i in
-        gdf['geometry'].to_crs('+proj=cea')]),
+    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area
+                           for i in gdf['geometry'].to_crs('+proj=cea')]),
                       africa.geometry.area,
-                      rtol=1e-3)
+                      atol=1, rtol=0)
     
     if iprint: print("Done with checking overlap with Africa.")
 

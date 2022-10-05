@@ -118,11 +118,12 @@ def check_overlap(gdf, iprint=False):
     africa = africa.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    assert np.isclose(sum([i.intersection(africa.iloc[0].geometry).area
-                           for i in gdf['geometry'].to_crs('+proj=cea')]),
-                      africa.geometry.area,
-                      atol=1, rtol=0)
-    
+    a1 = sum([i.intersection(africa.iloc[0].geometry).area
+              for i in gdf['geometry'].to_crs('+proj=cea')])
+    a2 = africa.geometry.area
+
+    assert np.isclose(a1, a2, atol=1, rtol=0), (a1-a2)
+ 
     if iprint: print("Done with checking overlap with Africa.")
 
 def check_poisson_disc(poissd, min_dx):

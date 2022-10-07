@@ -122,7 +122,7 @@ def check_overlap(gdf, iprint=False):
               for i in gdf['geometry'].to_crs('+proj=cea')])
     a2 = africa.geometry.area
 
-    assert np.isclose(a1, a2, atol=1, rtol=0), (a1-a2)
+    assert np.isclose(a1, a2, rtol=1e-5), (a1-a2)
  
     if iprint: print("Done with checking overlap with Africa.")
 

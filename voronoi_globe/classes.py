@@ -60,7 +60,8 @@ class PoissonDiscSphere():
                  k_coarse=9,
                  iprint=True,
                  rng=None):
-        """        Parameters
+        """
+        Parameters
         ----------
         r : float
             Angular distance to use to separate random adjacent points.

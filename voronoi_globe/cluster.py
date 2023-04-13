@@ -20,7 +20,6 @@ def polygonize(iter_pairs=None):
         and grids {dx as int}, {gridix as int}. When None, goes through preset list
         of all combos from dx=80 up to dx=1280 (about 35km).
     """
-
     from numpy import pi
 
     def loop_wrapper(args):
@@ -105,7 +104,6 @@ def revise_neighbors(dx, gridix, write=True):
     write : bool, True
         If True, write to shapely file.
     """
-
     assert os.path.isfile(f'voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
     polygons = gpd.read_file(f'voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
     
@@ -151,7 +149,6 @@ def create_polygon(poissd, centerix):
     -------
     shapely.geometry.Polygon
     """
-    
     center = poissd.samples[centerix]
 
     neighborsix = poissd.neighbors(center)
@@ -166,7 +163,7 @@ def create_polygon(poissd, centerix):
         cell = VoronoiCell(center, rng=np.random.RandomState(0), precision=precision)
         triIx = cell.initialize_with_tri(neighbors)
     except AssertionError:
-        # try reducing precision
+        # try changing precision
         precision = 5e-8
         cell = VoronoiCell(center, rng=np.random.RandomState(0), precision=precision)
         triIx = cell.initialize_with_tri(neighbors)

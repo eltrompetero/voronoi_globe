@@ -50,8 +50,7 @@ class PoissonDiscSphere():
     unif_theta_bounds : tuple
         For sampling neighbors when generating the random tiling.
     width : tuple
-    """
-    def __init__(self, r,
+    """    def __init__(self, r,
                  width_bds=(0, 2*pi),
                  height_bds=(-pi/2, pi/2),
                  fast_sample_size=30,
@@ -60,8 +59,7 @@ class PoissonDiscSphere():
                  k_coarse=9,
                  iprint=True,
                  rng=None):
-        """
-        Parameters
+        """        Parameters
         ----------
         r : float
             Angular distance to use to separate random adjacent points.
@@ -89,9 +87,7 @@ class PoissonDiscSphere():
             comparisons will be made with the children of those coarse grids.
         iprint : bool, True
         rng : np.random.RandomState, None
-        """
-
-        assert r>0, r
+        """        assert r>0, r
         assert 0<=width_bds[0]<2*pi and 0<=width_bds[1]<2*pi
         assert -pi/2<=height_bds[0]<height_bds[1]<=pi/2
 
@@ -116,9 +112,7 @@ class PoissonDiscSphere():
         Parameters
         ----------
         coarse_grid : ndarray
-        """
-        
-        if self.iprint:
+        """        if self.iprint:
             print("Setting up coarse grid.")
 
         self.coarseGrid = coarse_grid
@@ -137,18 +131,14 @@ class PoissonDiscSphere():
     def preprocess_coarse_grid(self):
         """Find the k_coarse nearest coarse neighbors for each point in the coarse grid. Also
         include self in the list which explains the +1.
-        """
-
-        coarseNeighbors = []
+        """        coarseNeighbors = []
         for pt in self.coarseGrid:
             coarseNeighbors.append( np.argsort(self.dist(pt,
                                                          self.coarseGrid))[:self.kCoarse+1].tolist() )
         self.coarseNeighbors = coarseNeighbors
 
     def get_neighbours(self, *args, **kwargs):
-        """Deprecated wrapper for neighbors()."""
-        
-        warn("PoissonDiscSphere.get_neighbours() is now deprecated. Use neighbors() instead.")
+        """Deprecated wrapper for neighbors()."""        warn("PoissonDiscSphere.get_neighbours() is now deprecated. Use neighbors() instead.")
         return self.neighbors(*args, **kwargs)
 
     def neighbors(self, xy,
@@ -183,9 +173,7 @@ class PoissonDiscSphere():
             neighbor_ix
         ndarray
             Solid angle distance to neighbors.
-        """
-
-        top_n = top_n or self.fastSampleSize
+        """        top_n = top_n or self.fastSampleSize
         threshold = 2 * self.r * apply_dist_threshold
         
         # case where coarse grid is defined
@@ -240,9 +228,7 @@ class PoissonDiscSphere():
         return []
 
     def get_closest_neighbor(self, *args, **kwargs):
-        """Deprecated. Use closest_neighbor() instead."""
-
-        warn("Deprecated. Use closest_neighbor() instead.")
+        """Deprecated. Use closest_neighbor() instead."""        warn("Deprecated. Use closest_neighbor() instead.")
         return self.closest_neighbor(*args, **kwargs)
 
     def closest_neighbor(self, pt, ignore_zero=1e-9):
@@ -258,9 +244,7 @@ class PoissonDiscSphere():
         -------
         list of ints
             Indices of closest points.
-        """
-
-        if pt.ndim==1:
+        """        if pt.ndim==1:
             pt = pt[None,:]
         
         return [self._closest_neighbor(row, ignore_zero) for row in pt]
@@ -280,9 +264,7 @@ class PoissonDiscSphere():
         -------
         int 
             Index.
-        """
-
-        neighborix, distance = self.neighbors(pt, return_dist=True)
+        """        neighborix, distance = self.neighbors(pt, return_dist=True)
         neighborix = np.array(neighborix, dtype=int)
 
         if ignore_zero and len(neighborix)>0:
@@ -309,7 +291,6 @@ class PoissonDiscSphere():
         float
             Min distance on a unit sphere (units of radians).
         """
-
         distance = self.dist(pt, self.samples[self.neighbors(pt)])
         if ignore_zero:
             return distance[distance>ignore_zero].min()
@@ -319,9 +300,7 @@ class PoissonDiscSphere():
         """Is pt a valid point to emit as a sample?
         It must be no closer than r from any other point: check the cells in its immediate
         neighborhood.
-        """
-        
-        if len(self.samples):
+        """        if len(self.samples):
             neighbor_ix, dist = self.neighbors(pt, return_dist=True)
             if (dist < self.r).any():
                 return False
@@ -333,9 +312,7 @@ class PoissonDiscSphere():
         k points from the annulus of inner radius r, outer radius 2r around the reference
         point, refpt. If none of them are suitable (because they're too close to existing
         points in the sample), return False. Otherwise, return the pt in a list.
-        """
-
-        sphereRefpt = jitSphereCoordinate(refpt[0]%(2*pi), refpt[1]+pi/2)
+        """        sphereRefpt = jitSphereCoordinate(refpt[0]%(2*pi), refpt[1]+pi/2)
         i = 0
         while i < self.nTries:
             # generate a random perturbation of this point within allowed bounds
@@ -365,9 +342,7 @@ class PoissonDiscSphere():
         Returns
         -------
         int
-        """
-        
-        if fast:
+        """        if fast:
             return np.argmin( self.fast_dist(pt, self.coarseGrid) )
         return np.argmin( self.dist(pt, self.coarseGrid) )
 
@@ -381,9 +356,7 @@ class PoissonDiscSphere():
         -------
         ndarray
             sample points
-        """
-
-        if not self.coarseGrid is None:
+        """        if not self.coarseGrid is None:
             self.samplesByGrid = [[] for i in self.coarseGrid]
             
         # must account for periodic boundary conditions when generating new points and
@@ -440,7 +413,6 @@ class PoissonDiscSphere():
     @classmethod
     def dist(cls, x, y):
         """Great circle distance. Vector optimized."""
-
         if x.ndim==2 and y.ndim==1:
             return 2*arcsin( np.sqrt(sin((x[:,1]-y[1])/2)**2 +
                              cos(x[:,1])*cos(y[1])*sin((x[:,0]-y[0])/2)**2) )
@@ -465,9 +437,7 @@ class PoissonDiscSphere():
         Returns
         -------
         dvec : ndarray
-        """
-
-        # Account for discontinuity at phi=0 and phi=2*pi
+        """        # Account for discontinuity at phi=0 and phi=2*pi
         d = np.abs(x-y)
         ix = d[:,0]>pi
         d[ix,0] = pi-d[ix,0]%pi
@@ -505,9 +475,7 @@ class PoissonDiscSphere():
             If True, carries out expansion even if points must be deleted.
         truncate_to_bounds : bool, True
             If True, then only keep points that fall within the bounds of the class.
-        """
-
-        samples = self.samples.copy()
+        """        samples = self.samples.copy()
         if not self.coarseGrid is None:
             coarseGrid = self.coarseGrid.copy()
         else:
@@ -633,9 +601,7 @@ class PoissonDiscSphere():
         kw_ax_set : dict, None
         apply_mod : bool, False
             If True, wrap phi to [-pi,pi].
-        """
-
-        if fig is None and ax is None:
+        """        if fig is None and ax is None:
             fig, ax = plt.subplots()
         elif ax is None:
             ax = fig.add_subplot(1, 1, 1)
@@ -681,7 +647,6 @@ class PoissonDiscSphere():
         matplotlib.Figure
         matplotlib.Axes
         """
-
         if fig is None and ax is None:
             fig = plt.figure(**fig_kw)
             ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -718,8 +683,7 @@ class PoissonDiscSphere():
         -------
         list of indices
             Pixel to which each coordinate belongs.
-        """
-        
+        """        
         # check that lon and lat are within bounds used for this code
         assert ((xy[:,0]>=0) & (xy[:,0]<2*pi) & (-pi/2<=xy[:,1]) & (xy[:,1]<=pi/2)).all()
         
@@ -743,7 +707,6 @@ class PoissonDiscSphere():
         -------
         bool
         """
-
         assert type(xy) is np.ndarray
         if xy.ndim==1:
             # case where the interval includes the discontinuity at 2pi
@@ -772,8 +735,7 @@ class PoissonDiscSphere():
         Returns
         -------
         int
-        """
-        
+        """        
         assert xy.ndim==1
         return np.argmin(self.dist(xy, self.samples))
 
@@ -785,7 +747,6 @@ class PoissonDiscSphere():
         bool
             True if min distance satisfies threshold.
         """
-
         def loop_wrapper(ix):
             n, d = self.neighbors(self.samples[ix], return_dist=True)
             d = d.tolist()
@@ -829,8 +790,7 @@ def find_first_in_r(xy, xyOther, r):
     int
         Index of either first element within r/2 or closest point if no point is
         within r/2.
-    """
-    
+    """    
     dmin = 4  # knowing that max geodesic distance on spherical surface is pi
     minix = 0
     for i in range(len(xyOther)):
@@ -848,15 +808,12 @@ def find_first_in_r(xy, xyOther, r):
 class SphereCoordinate():
     """Coordinate on unit sphere. Contains methods for easy manipulation and translation
     of points. Sphere is normalized to unit sphere.
-    """
-    def __init__(self, *args, rng=None):
-        """
-        Parameters
+    """    def __init__(self, *args, rng=None):
+        """        Parameters
         ----------
         (x,y,z) or vector or (phi,theta)
         rng : np.random.RandomState, None
         """
-
         self.update_xy(*args)
         if rng is None:
             self.rng = np.random.RandomState()
@@ -865,7 +822,6 @@ class SphereCoordinate():
             
     def update_xy(self, *args):
         """Store both Cartesian and spherical representation of point."""
-
         if len(args)==2:  # assuming angles are given
             # theta is angle off z-axis
             # phi is that around x-y plane
@@ -918,7 +874,6 @@ class SphereCoordinate():
         -------
         randvec : ndarray
         """
-
         # setup rotation operation
         if self.vec[-1]<-.5:
             # when vector is near south pole, numerical erros are dominant for the rotation and so we
@@ -959,8 +914,7 @@ class SphereCoordinate():
         return newvec
 
     def rotate(self, rotvec, d):
-        """
-        Parameters
+        """        Parameters
         ----------
         vec : ndarray
             Rotation axis
@@ -971,7 +925,6 @@ class SphereCoordinate():
         -------
         SphereCoordinate
         """
-
         rotvec /= np.sqrt(rotvec[0]**2 + rotvec[1]**2 + rotvec[2]**2)
         a, b = cos(d/2), sin(d/2)
         rotq = Quaternion(a, b*rotvec[0], b*rotvec[1], b*rotvec[2])
@@ -995,8 +948,7 @@ class SphereCoordinate():
             Rotation axis.
         float
             Angle to rotate.
-        """
-        
+        """        
         rotvec = np.cross( self.vec, np.array([0,0,1]) )
         rotvec /= np.linalg.norm(rotvec)
         d = arccos( self.vec[-1] )
@@ -1013,8 +965,7 @@ class SphereCoordinate():
         Returns
         -------
         float
-        """
-        
+        """        
         if not isinstance(y, type(self)):
             if len(y)==2:
                 return haversine([self.phi, self.theta], y)
@@ -1033,11 +984,11 @@ class SphereCoordinate():
 
     def __repr__(self):
         coord = self.vec[0], self.vec[1], self.vec[2], self.phi, self.theta
-        return "misc.globe.SphereCoordinate\nx=%1.4f, y=%1.4f, z=%1.4f\nphi=%1.4f, theta=%1.4f"%coord
+        return "voronoi_globe.classes.SphereCoordinate\nx=%1.4f, y=%1.4f, z=%1.4f\nphi=%1.4f, theta=%1.4f"%coord
 
     def __str__(self):
         coord = self.vec[0], self.vec[1], self.vec[2], self.phi, self.theta
-        return "misc.globe.SphereCoordinate\nx=%1.4f, y=%1.4f, z=%1.4f\nphi=%1.4f, theta=%1.4f"%coord
+        return "voronoi_globe.classes.SphereCoordinate\nx=%1.4f, y=%1.4f, z=%1.4f\nphi=%1.4f, theta=%1.4f"%coord
 
     def __add__(self, y):
         assert isinstance(y, type(self))
@@ -1082,15 +1033,12 @@ class jitSphereCoordinate():
     theta in [0, 2*pi]
     phi in [0, pi]
     """
-
     def __init__(self, phi, theta):
-        """
-        Parameters
+        """        Parameters
         ----------
         phi : float
         theta : float
-        """
-                
+        """                
         self.update_xy(phi, theta)
             
     def update_xy(self, phi, theta):
@@ -1127,7 +1075,6 @@ class jitSphereCoordinate():
         newphi : float
         newtheta : float
         """
-
         # setup rotation operation
         if self.vec[-1]<-.5:
             # when vector is near south pole, numerical erros are dominant for the rotation and so we
@@ -1165,7 +1112,6 @@ class jitSphereCoordinate():
     def random_shift_controlled(self, bds, r1, r2):
         """Same as random_shift() except with explicit control of random numbers by passing them in.
         """
-
         # setup rotation operation
         if self.vec[-1]<-.5:
             # when vector is near south pole, numerical erros are dominant for the rotation and so we
@@ -1201,8 +1147,7 @@ class jitSphereCoordinate():
         return newphi, newtheta
 
     def rotate(self, rotvec, d):
-        """
-        Parameters
+        """        Parameters
         ----------
         vec : ndarray
             Rotation axis
@@ -1214,7 +1159,6 @@ class jitSphereCoordinate():
         newphi : float
         newtheta : float
         """
-
         rotvec=rotvec/np.sqrt(rotvec[0]**2 + rotvec[1]**2 + rotvec[2]**2)
         a, b=cos(d/2), sin(d/2)
         rotq=jitQuaternion(a, b*rotvec[0], b*rotvec[1], b*rotvec[2])
@@ -1228,8 +1172,7 @@ class jitSphereCoordinate():
         return jitSphereCoordinate(newphi%(2*pi), newtheta)
 
     def shift(self, dphi, dtheta):
-        """
-        Return a vector that is randomly shifted away from this coordinate. This is done by
+        """        Return a vector that is randomly shifted away from this coordinate. This is done by
         imagining that hte north pole is aligned along this vector and then adding a random angle
         and then rotating the north pole to align with this vector.
 
@@ -1246,8 +1189,7 @@ class jitSphereCoordinate():
         -------
         newphi : float
         newtheta : float
-        """
-        raise NotImplementedError
+        """        raise NotImplementedError
         # setup rotation operation
         if self.vec[-1]<-.5:
             # when vector is near south pole, numerical erros are dominant for the rotation and so we
@@ -1295,8 +1237,7 @@ spec=[
 @jitclass(spec)
 class jitQuaternion():
     """Faster quaternion class with limited functionality.
-    """
-    def __init__(self,a,b,c,d):
+    """    def __init__(self,a,b,c,d):
         a*=1.
         b*=1.
         c*=1.
@@ -1309,11 +1250,9 @@ class jitQuaternion():
         return jitQuaternion(self.real, negvec[0], negvec[1], negvec[2])
     
     def hprod(self,t):
-        """Right side Hamiltonian product."""
-        p=[self.real, self.vec[0], self.vec[1], self.vec[2]]
+        """Right side Hamiltonian product."""        p=[self.real, self.vec[0], self.vec[1], self.vec[2]]
         t=[t.real, t.vec[0], t.vec[1], t.vec[2]]
-        """Hamiltonian product between two quaternions."""
-        return jitQuaternion( p[0]*t[0] -p[1]*t[1] -p[2]*t[2] -p[3]*t[3],
+        """Hamiltonian product between two quaternions."""        return jitQuaternion( p[0]*t[0] -p[1]*t[1] -p[2]*t[2] -p[3]*t[3],
                               p[0]*t[1] +p[1]*t[0] +p[2]*t[3] -p[3]*t[2],
                               p[0]*t[2] -p[1]*t[3] +p[2]*t[0] +p[3]*t[1],
                               p[0]*t[3] +p[1]*t[2] -p[2]*t[1] +p[3]*t[0] )
@@ -1332,8 +1271,7 @@ class jitQuaternion():
         Parameters
         ----------
         r : Quaternion
-        """
-        return r.hprod( self.hprod( r.inv() ) )
+        """        return r.hprod( self.hprod( r.inv() ) )
 
     def __str__(self):
         return "Quaternion: [%1.3f,%1.3f,%1.3f,%1.3f]"%(self.real,self.vec[0],self.vec[1],self.vec[2])
@@ -1346,8 +1284,7 @@ class jitQuaternion():
 class Quaternion():
     """Basic quaternion class. This can be used to represent vectors and efficient
     rotation operations on them.
-    """
-    def __init__(self, a, b, c, d):
+    """    def __init__(self, a, b, c, d):
         self.real = a  # magnitude of vector
         self.vec = np.array([b,c,d])  # normalized components of vector
         
@@ -1358,7 +1295,6 @@ class Quaternion():
     def hprod(self,t):
         """Right side Hamiltonian product.
         """
-
         p = [self.real] + self.vec.tolist()
         t = [t.real] + t.vec.tolist()
 
@@ -1383,7 +1319,6 @@ class Quaternion():
         ----------
         r : Quaternion
         """
-
         return r.hprod( self.hprod( r.inv() ) )
 
     def __str__(self):
@@ -1407,18 +1342,15 @@ class GreatCircle():
     """Great circle that lives on unit sphere in 3D. This keeps track of it by using the
     orthogonal plane and defining an arbitrary starting point for generating the full ring
     of points.
-    """
-    def __init__(self, w, startvec=None):
-        """
-        Parameters
+    """    def __init__(self, w, startvec=None):
+        """        Parameters
         ----------
         w : ndarray
             Vector normal to defining plane.
         startvec : ndarray, None
             Always start tracing out great circle from this point. If not specified, try
             to calculate some arbitrary starting point.
-        """
-        
+        """        
         assert w.size==3
         
         self.w = w / np.linalg.norm(w)
@@ -1444,8 +1376,7 @@ class GreatCircle():
         Returns
         -------
         function
-        """
-        
+        """        
         G0 = SphereCoordinate(self.startvec)
         
         if as_angle:
@@ -1471,8 +1402,7 @@ class GreatCircle():
         -------
         ndarray
             Two solutions as xyz coordinations.
-        """
-        
+        """        
         if isinstance(v, type(self)) or 'w' in v.__dict__.keys():
             v = v.w
         else:
@@ -1533,7 +1463,6 @@ class GreatCircle():
             between x and y on the sphere.
             Plane is oriented towards y from x.
         """
-
         assert y!=x
         w = y.vec - x.vec  # rotation axis (normal to plane of great circle)
         G0 = x + y  # midpoint vector that points to one point along great circle
@@ -1557,8 +1486,7 @@ class GreatCircle():
         Returns
         -------
         GreatCircle
-        """
-        
+        """        
         # construct normal vector for defining great circle
         comp1 = v.vec.dot(w0.vec) * w0.vec
         w = v.vec - comp1
@@ -1566,20 +1494,18 @@ class GreatCircle():
         return GreatCircle(w, startvec=w0.vec)
 
     def __str__(self):
-        return f"misc.globe.GreatCircle: omega={self.w}"
+        return f"voronoi_globe.classes.GreatCircle: omega={self.w}"
 
     def __repr__(self):
-        return f"misc.globe.GreatCircle: omega={self.w}"
+        return f"voronoi_globe.classes.GreatCircle: omega={self.w}"
 #end GreatCircle
 
 
 
 class GreatCircleIntersect():
     """Intersection of two great circles.
-    """
-    def __init__(self, g1, g2, xyz, d):
-        """
-        Parameters
+    """    def __init__(self, g1, g2, xyz, d):
+        """        Parameters
         ----------
         g1 : GreatCircle
         g2 : GreatCircle
@@ -1587,8 +1513,7 @@ class GreatCircleIntersect():
             Point of intersection.
         d : float
             Distance from center point bounded by great circles.
-        """
-        
+        """        
         self.g1 = g1
         self.g2 = g2
         self.xyz = xyz
@@ -1600,10 +1525,10 @@ class GreatCircleIntersect():
                  np.array_equal(self.xyz, y.xyz))
 
     def __str__(self):
-        return f"misc.globe.GreatCircleIntersect\n{self.g1}\n{self.g2}"
+        return f"voronoi_globe.classes.GreatCircleIntersect\n{self.g1}\n{self.g2}"
 
     def __repr__(self):
-        return f"misc.globe.GreatCircleIntersect\n{self.g1}\n{self.g2}"
+        return f"voronoi_globe.classes.GreatCircleIntersect\n{self.g1}\n{self.g2}"
 #end GreatCircleIntersect
 
 
@@ -1616,17 +1541,13 @@ class VoronoiCell():
 
     Note that terminology "edges", "boundaries", "cuts", and "facets" are used
     interchangeably.
-    """
-    def __init__(self, center, rng=None, precision=1e-7):
-        """
-        Parameters
+    """    def __init__(self, center, rng=None, precision=1e-7):
+        """        Parameters
         ----------
         center : SphereCoordinate
             Center of cell.
         rng : np.random.RandomState, None
-        """
-
-        self.center = center
+        """        self.center = center
         self.vertices = []
         self.edges = []  # list of (vertex, vertex, list of bisector)
         self.rng = rng or np.random
@@ -1651,9 +1572,7 @@ class VoronoiCell():
         list of ints
             Indices of the points that are used to determine bisecting great circles that
             define lips boundaries.
-        """
-
-        # find lip wrapping center starting with pair of closests points to center
+        """        # find lip wrapping center starting with pair of closests points to center
         d = np.array([self.center.geo_dist(p) for p in pts])
         assert (d>0).all(), "Center point shouldn't be included."
         closeptsIx = np.argsort(d)[:2].tolist()
@@ -1684,7 +1603,6 @@ class VoronoiCell():
             Indices of the points that are used to determine bisecting great circles that
             define triangle boundaries.
         """
-
         # find lip wrapping center starting with pair of closests points to center
         d = np.array([self.center.geo_dist(p) for p in pts])
         assert (d>0).all(), "Center point shouldn't be included."
@@ -1769,7 +1687,6 @@ class VoronoiCell():
             Distance. Inf for pts that should be ignored hereon b/c they were already
             considered (?).
         """
-
         posPlane = GreatCircle.ortho(SphereCoordinate(thisV), self.center)
         mult_of_d = self.center.geo_dist(thisV) * distance_mult
         checkResult = [self._check_pt(pt, posPlane, mult_of_d) for pt in pts]
@@ -1785,8 +1702,7 @@ class VoronoiCell():
     def _check_pt(self, pt, posPlane, d, min_d=1e-5):
         """Return distance to pt if it is on positive side of plane and within
         distance d of center; otherwise, return np.inf.
-        """
-        
+        """        
         if pt.dot(posPlane.w) < min_d:
             return np.inf
         
@@ -1810,8 +1726,7 @@ class VoronoiCell():
         Returns
         -------
         bool
-        """
-        
+        """        
         if isinstance(p1, np.ndarray):
             p1 = SphereCoordinate(p1)
         if isinstance(p2, np.ndarray):
@@ -1850,14 +1765,12 @@ class VoronoiCell():
         ----------
         newv : SphereCoordinate
         """
-
         if all([v!=newv for v in self.vertices]):
             self.vertices.append(newv)
 
     def order_vertices(self):
         """Order vertices in a counterclockwise fashion about the center.
-        """
-        
+        """        
         self.angle = np.zeros(len(self.vertices))
         for i in range(self.angle.size):
             self.angle[i] = arctan2(self.vertices[i].dot(self.y),
@@ -1886,7 +1799,6 @@ class VoronoiCell():
         bool
             Returns False if unsuccessful cut.
         """
-
         assert len(self.edges)>1
         
         # there are at most two points of intersection
@@ -1931,7 +1843,6 @@ class VoronoiCell():
         when an intersection of two edges is sufficiently close to the location of a
         third bisector.
         """
-
         self.order_vertices()
         self.edges = []
         vertices_to_remove = []
@@ -1973,8 +1884,7 @@ class VoronoiCell():
         -------
         bool (or list of bool)
             True if inside.
-        """
-        
+        """        
         if detailed:
             return [(p.dot(edge[2].w) + tol)>0 for edge in self.edges]
         return all([(p.dot(edge[2].w) + tol)>0 for edge in self.edges])
@@ -1990,7 +1900,6 @@ class VoronoiCell():
         stepsize : float, 1e-2
         as_angle : bool, False
         """
-
         xyz = []
         for i in range(len(self.edges)):
             p1, p2, thisEdge = self.edges[i]
@@ -2019,7 +1928,6 @@ class VoronoiCell():
     def _combine_close_rows(self, X, tol=None):
         """Combine rows that are within tolerance.
         """
-
         tol = tol or self.precision
         
         groups = []

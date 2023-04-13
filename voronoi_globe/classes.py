@@ -50,7 +50,8 @@ class PoissonDiscSphere():
     unif_theta_bounds : tuple
         For sampling neighbors when generating the random tiling.
     width : tuple
-    """    def __init__(self, r,
+    """
+    def __init__(self, r,
                  width_bds=(0, 2*pi),
                  height_bds=(-pi/2, pi/2),
                  fast_sample_size=30,
@@ -87,7 +88,8 @@ class PoissonDiscSphere():
             comparisons will be made with the children of those coarse grids.
         iprint : bool, True
         rng : np.random.RandomState, None
-        """        assert r>0, r
+        """
+        assert r>0, r
         assert 0<=width_bds[0]<2*pi and 0<=width_bds[1]<2*pi
         assert -pi/2<=height_bds[0]<height_bds[1]<=pi/2
 
@@ -112,7 +114,8 @@ class PoissonDiscSphere():
         Parameters
         ----------
         coarse_grid : ndarray
-        """        if self.iprint:
+        """
+        if self.iprint:
             print("Setting up coarse grid.")
 
         self.coarseGrid = coarse_grid
@@ -131,14 +134,16 @@ class PoissonDiscSphere():
     def preprocess_coarse_grid(self):
         """Find the k_coarse nearest coarse neighbors for each point in the coarse grid. Also
         include self in the list which explains the +1.
-        """        coarseNeighbors = []
+        """
+        coarseNeighbors = []
         for pt in self.coarseGrid:
             coarseNeighbors.append( np.argsort(self.dist(pt,
                                                          self.coarseGrid))[:self.kCoarse+1].tolist() )
         self.coarseNeighbors = coarseNeighbors
 
     def get_neighbours(self, *args, **kwargs):
-        """Deprecated wrapper for neighbors()."""        warn("PoissonDiscSphere.get_neighbours() is now deprecated. Use neighbors() instead.")
+        """Deprecated wrapper for neighbors()."""
+        warn("PoissonDiscSphere.get_neighbours() is now deprecated. Use neighbors() instead.")
         return self.neighbors(*args, **kwargs)
 
     def neighbors(self, xy,
@@ -173,7 +178,8 @@ class PoissonDiscSphere():
             neighbor_ix
         ndarray
             Solid angle distance to neighbors.
-        """        top_n = top_n or self.fastSampleSize
+        """
+        top_n = top_n or self.fastSampleSize
         threshold = 2 * self.r * apply_dist_threshold
         
         # case where coarse grid is defined
@@ -228,7 +234,8 @@ class PoissonDiscSphere():
         return []
 
     def get_closest_neighbor(self, *args, **kwargs):
-        """Deprecated. Use closest_neighbor() instead."""        warn("Deprecated. Use closest_neighbor() instead.")
+        """Deprecated. Use closest_neighbor() instead."""
+        warn("Deprecated. Use closest_neighbor() instead.")
         return self.closest_neighbor(*args, **kwargs)
 
     def closest_neighbor(self, pt, ignore_zero=1e-9):
@@ -244,7 +251,8 @@ class PoissonDiscSphere():
         -------
         list of ints
             Indices of closest points.
-        """        if pt.ndim==1:
+        """
+        if pt.ndim==1:
             pt = pt[None,:]
         
         return [self._closest_neighbor(row, ignore_zero) for row in pt]
@@ -264,7 +272,8 @@ class PoissonDiscSphere():
         -------
         int 
             Index.
-        """        neighborix, distance = self.neighbors(pt, return_dist=True)
+        """
+        neighborix, distance = self.neighbors(pt, return_dist=True)
         neighborix = np.array(neighborix, dtype=int)
 
         if ignore_zero and len(neighborix)>0:
@@ -300,7 +309,8 @@ class PoissonDiscSphere():
         """Is pt a valid point to emit as a sample?
         It must be no closer than r from any other point: check the cells in its immediate
         neighborhood.
-        """        if len(self.samples):
+        """
+        if len(self.samples):
             neighbor_ix, dist = self.neighbors(pt, return_dist=True)
             if (dist < self.r).any():
                 return False
@@ -312,7 +322,8 @@ class PoissonDiscSphere():
         k points from the annulus of inner radius r, outer radius 2r around the reference
         point, refpt. If none of them are suitable (because they're too close to existing
         points in the sample), return False. Otherwise, return the pt in a list.
-        """        sphereRefpt = jitSphereCoordinate(refpt[0]%(2*pi), refpt[1]+pi/2)
+        """
+        sphereRefpt = jitSphereCoordinate(refpt[0]%(2*pi), refpt[1]+pi/2)
         i = 0
         while i < self.nTries:
             # generate a random perturbation of this point within allowed bounds
@@ -342,7 +353,8 @@ class PoissonDiscSphere():
         Returns
         -------
         int
-        """        if fast:
+        """
+        if fast:
             return np.argmin( self.fast_dist(pt, self.coarseGrid) )
         return np.argmin( self.dist(pt, self.coarseGrid) )
 
@@ -356,7 +368,8 @@ class PoissonDiscSphere():
         -------
         ndarray
             sample points
-        """        if not self.coarseGrid is None:
+        """
+        if not self.coarseGrid is None:
             self.samplesByGrid = [[] for i in self.coarseGrid]
             
         # must account for periodic boundary conditions when generating new points and
@@ -437,7 +450,8 @@ class PoissonDiscSphere():
         Returns
         -------
         dvec : ndarray
-        """        # Account for discontinuity at phi=0 and phi=2*pi
+        """
+        # Account for discontinuity at phi=0 and phi=2*pi
         d = np.abs(x-y)
         ix = d[:,0]>pi
         d[ix,0] = pi-d[ix,0]%pi
@@ -475,7 +489,8 @@ class PoissonDiscSphere():
             If True, carries out expansion even if points must be deleted.
         truncate_to_bounds : bool, True
             If True, then only keep points that fall within the bounds of the class.
-        """        samples = self.samples.copy()
+        """
+        samples = self.samples.copy()
         if not self.coarseGrid is None:
             coarseGrid = self.coarseGrid.copy()
         else:
@@ -601,7 +616,8 @@ class PoissonDiscSphere():
         kw_ax_set : dict, None
         apply_mod : bool, False
             If True, wrap phi to [-pi,pi].
-        """        if fig is None and ax is None:
+        """
+        if fig is None and ax is None:
             fig, ax = plt.subplots()
         elif ax is None:
             ax = fig.add_subplot(1, 1, 1)
@@ -808,7 +824,8 @@ def find_first_in_r(xy, xyOther, r):
 class SphereCoordinate():
     """Coordinate on unit sphere. Contains methods for easy manipulation and translation
     of points. Sphere is normalized to unit sphere.
-    """    def __init__(self, *args, rng=None):
+    """
+    def __init__(self, *args, rng=None):
         """        Parameters
         ----------
         (x,y,z) or vector or (phi,theta)
@@ -914,7 +931,8 @@ class SphereCoordinate():
         return newvec
 
     def rotate(self, rotvec, d):
-        """        Parameters
+        """
+        Parameters
         ----------
         vec : ndarray
             Rotation axis
@@ -1147,7 +1165,8 @@ class jitSphereCoordinate():
         return newphi, newtheta
 
     def rotate(self, rotvec, d):
-        """        Parameters
+        """
+        Parameters
         ----------
         vec : ndarray
             Rotation axis
@@ -1172,7 +1191,7 @@ class jitSphereCoordinate():
         return jitSphereCoordinate(newphi%(2*pi), newtheta)
 
     def shift(self, dphi, dtheta):
-        """        Return a vector that is randomly shifted away from this coordinate. This is done by
+        """Return a vector that is randomly shifted away from this coordinate. This is done by
         imagining that hte north pole is aligned along this vector and then adding a random angle
         and then rotating the north pole to align with this vector.
 
@@ -1189,7 +1208,8 @@ class jitSphereCoordinate():
         -------
         newphi : float
         newtheta : float
-        """        raise NotImplementedError
+        """
+        raise NotImplementedError
         # setup rotation operation
         if self.vec[-1]<-.5:
             # when vector is near south pole, numerical erros are dominant for the rotation and so we
@@ -1237,7 +1257,8 @@ spec=[
 @jitclass(spec)
 class jitQuaternion():
     """Faster quaternion class with limited functionality.
-    """    def __init__(self,a,b,c,d):
+    """
+    def __init__(self,a,b,c,d):
         a*=1.
         b*=1.
         c*=1.
@@ -1250,9 +1271,11 @@ class jitQuaternion():
         return jitQuaternion(self.real, negvec[0], negvec[1], negvec[2])
     
     def hprod(self,t):
-        """Right side Hamiltonian product."""        p=[self.real, self.vec[0], self.vec[1], self.vec[2]]
+        """Right side Hamiltonian product."""
+        p=[self.real, self.vec[0], self.vec[1], self.vec[2]]
         t=[t.real, t.vec[0], t.vec[1], t.vec[2]]
-        """Hamiltonian product between two quaternions."""        return jitQuaternion( p[0]*t[0] -p[1]*t[1] -p[2]*t[2] -p[3]*t[3],
+        """Hamiltonian product between two quaternions."""
+        return jitQuaternion( p[0]*t[0] -p[1]*t[1] -p[2]*t[2] -p[3]*t[3],
                               p[0]*t[1] +p[1]*t[0] +p[2]*t[3] -p[3]*t[2],
                               p[0]*t[2] -p[1]*t[3] +p[2]*t[0] +p[3]*t[1],
                               p[0]*t[3] +p[1]*t[2] -p[2]*t[1] +p[3]*t[0] )
@@ -1271,7 +1294,8 @@ class jitQuaternion():
         Parameters
         ----------
         r : Quaternion
-        """        return r.hprod( self.hprod( r.inv() ) )
+        """
+        return r.hprod( self.hprod( r.inv() ) )
 
     def __str__(self):
         return "Quaternion: [%1.3f,%1.3f,%1.3f,%1.3f]"%(self.real,self.vec[0],self.vec[1],self.vec[2])
@@ -1284,7 +1308,8 @@ class jitQuaternion():
 class Quaternion():
     """Basic quaternion class. This can be used to represent vectors and efficient
     rotation operations on them.
-    """    def __init__(self, a, b, c, d):
+    """
+    def __init__(self, a, b, c, d):
         self.real = a  # magnitude of vector
         self.vec = np.array([b,c,d])  # normalized components of vector
         
@@ -1342,7 +1367,8 @@ class GreatCircle():
     """Great circle that lives on unit sphere in 3D. This keeps track of it by using the
     orthogonal plane and defining an arbitrary starting point for generating the full ring
     of points.
-    """    def __init__(self, w, startvec=None):
+    """
+    def __init__(self, w, startvec=None):
         """        Parameters
         ----------
         w : ndarray
@@ -1504,8 +1530,10 @@ class GreatCircle():
 
 class GreatCircleIntersect():
     """Intersection of two great circles.
-    """    def __init__(self, g1, g2, xyz, d):
-        """        Parameters
+    """
+    def __init__(self, g1, g2, xyz, d):
+        """
+        Parameters
         ----------
         g1 : GreatCircle
         g2 : GreatCircle
@@ -1541,13 +1569,16 @@ class VoronoiCell():
 
     Note that terminology "edges", "boundaries", "cuts", and "facets" are used
     interchangeably.
-    """    def __init__(self, center, rng=None, precision=1e-7):
-        """        Parameters
+    """
+    def __init__(self, center, rng=None, precision=1e-7):
+        """
+        Parameters
         ----------
         center : SphereCoordinate
             Center of cell.
         rng : np.random.RandomState, None
-        """        self.center = center
+        """
+        self.center = center
         self.vertices = []
         self.edges = []  # list of (vertex, vertex, list of bisector)
         self.rng = rng or np.random
@@ -1572,7 +1603,8 @@ class VoronoiCell():
         list of ints
             Indices of the points that are used to determine bisecting great circles that
             define lips boundaries.
-        """        # find lip wrapping center starting with pair of closests points to center
+        """
+        # find lip wrapping center starting with pair of closests points to center
         d = np.array([self.center.geo_dist(p) for p in pts])
         assert (d>0).all(), "Center point shouldn't be included."
         closeptsIx = np.argsort(d)[:2].tolist()

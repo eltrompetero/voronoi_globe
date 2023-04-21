@@ -8,6 +8,14 @@ from .utils import *
 
 
 
+def africa_gdf():
+    """Load polygons for main African continent landmass and Madagascar.
+    """
+	world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+	world = world[['continent', 'geometry']]
+	continents = world.dissolve(by='continent')
+	return gpd.GeoDataFrame(continents["geometry"]["Africa"] , geometry=0)
+
 def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_center=False):
     """Load GeoPandas DataFrame and apply proper index before returning.
 
@@ -24,7 +32,6 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
     -------
     gpd.GeoDataFrame
     """
-
     assert not (exclude_center and exclude_boundary)
 
     gdf = gpd.read_file(f'{prefix}/voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
@@ -37,13 +44,15 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
     
     try:
         if exclude_boundary:
-            af = gpd.read_file('continent-poly/Africa_main.shp')
-            contained_ix = [af['geometry'].iloc[0].contains(p.buffer(1))
+            af = africa_gdf() 
+            contained_ix = [(af.geometry.iloc[0].contains(p.buffer(1)) or
+                             af.geometry.iloc[1].contains(p.buffer(1)))
                             for p in gdf['geometry'].values]
             gdf = gdf.loc[contained_ix]
         elif exclude_center:
-            af = gpd.read_file('continent-poly/Africa_main.shp')
-            contained_ix = [not af['geometry'].iloc[0].contains(p.buffer(1))
+            af = africa_gdf() 
+            contained_ix = [not (af['geometry'].iloc[0].contains(p.buffer(1)) or
+                                 af.geometry.iloc[1].contains(p.buffer(1)))
                             for p in gdf['geometry'].values]
             gdf = gdf.loc[contained_ix]
     except DriverError:
@@ -64,7 +73,6 @@ def load_centers(dx, gridix=0, prefix='.'):
     -------
     np.ndarray
     """
-    
     with open(f'{prefix}/voronoi_grids/{dx}/{str(gridix).zfill(2)}.p', 'rb') as f:
         poissd = pickle.load(f)['poissd']
 

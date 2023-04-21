@@ -3,4 +3,4 @@ from .classes import *
 from .interface import *
 
 import os
-assert os.path.isfile('continent-poly/Africa_main.shp')
+#assert os.path.isfile('continent-poly/Africa_main.shp')

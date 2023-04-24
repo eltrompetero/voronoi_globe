@@ -109,17 +109,18 @@ def check_overlap(gdf, iprint=False):
     ----------
     iprint : bool, False
     """
+
     # load africa
-    africa = africa_gdf()
+    africa = gpd.read_file('./continent-poly/Africa_main.shp')
     assert africa.crs.name=='WGS 84'
 
     # project to a flat projection that preserves area, Equal Area Cylindrical
     africa = africa.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    a1 = sum([i.intersection(africa.geometry.iloc[0]).area
+    a1 = sum([i.intersection(africa.iloc[0].geometry).area
               for i in gdf['geometry'].to_crs('+proj=cea')])
-    a2 = africa.geometry.area.sum()
+    a2 = africa.geometry.area
 
     assert np.isclose(a1, a2, rtol=1e-5), (a1-a2)
  
@@ -133,6 +134,7 @@ def check_poisson_disc(poissd, min_dx):
     poissd : PoissonDiscSphere
     min_dx : float
     """
+    
     # min distance surpasses min radius
     for xy in poissd.samples:
         neighbors, dist = poissd.neighbors(xy, return_dist=True)
@@ -705,12 +707,3 @@ def _max_dist_pair(phitheta, return_dist):
     if return_dist:
         return majix, dmat[dmaxix]
     return majix
-
-def africa_gdf():
-    """Load polygons for main African continent landmass and Madagascar.
-    """
-    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-    world = world[['continent', 'geometry']]
-    continents = world.dissolve(by='continent')
-    africa = gpd.GeoDataFrame(continents["geometry"]["Africa"] , geometry=0)
-    return africa.set_crs(world.crs)

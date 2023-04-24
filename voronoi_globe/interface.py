@@ -11,10 +11,10 @@ from .utils import *
 def africa_gdf():
     """Load polygons for main African continent landmass and Madagascar.
     """
-	world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-	world = world[['continent', 'geometry']]
-	continents = world.dissolve(by='continent')
-	return gpd.GeoDataFrame(continents["geometry"]["Africa"] , geometry=0)
+    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    world = world[['continent', 'geometry']]
+    continents = world.dissolve(by='continent')
+    return gpd.GeoDataFrame(continents["geometry"]["Africa"] , geometry=0)
 
 def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_center=False):
     """Load GeoPandas DataFrame and apply proper index before returning.

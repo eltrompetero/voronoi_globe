@@ -1001,6 +1001,11 @@ class SphereCoordinate():
             return self.vec.dot(y.vec)
         return self.vec.dot(y)
 
+    def cross(self, y):
+        if isinstance(y, type(self)):
+            return np.cross(self.vec, y.vec)
+        return np.cross(self.vec, y)
+
     def __repr__(self):
         coord = self.vec[0], self.vec[1], self.vec[2], self.phi, self.theta
         return "voronoi_globe.classes.SphereCoordinate\nx=%1.4f, y=%1.4f, z=%1.4f\nphi=%1.4f, theta=%1.4f"%coord

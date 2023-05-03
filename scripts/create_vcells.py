@@ -23,7 +23,7 @@ LARGEWIDTH = (np.pi*2-.31, 1.92)
 LARGEHEIGHT = (-1, 1.1)
 
 def create_one_grid(gridix, dx):
-    assert 99>=gridix>=0
+    assert 100>=gridix>=0
     assert dx in [20,40,80,160,320,640,1280,28,57,113,226,453,905]
 
     if dx==20 or dx==28 or dx==40:

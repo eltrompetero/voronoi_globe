@@ -4,13 +4,13 @@
 # ====================================================================================== #
 from itertools import product
 from functools import partial
+from scipy.spatial import SphericalVoronoi
 
 from .classes import SphereCoordinate, GreatCircle, GreatCircleIntersect, VoronoiCell, Quaternion
 from .utils import *
 
 
-
-def polygonize(iter_pairs=None):
+def polygonize(iter_pairs=None, iprint=False):
     """Create polygons denoting boundaries of Voronoi grid.
 
     Parameters
@@ -19,12 +19,26 @@ def polygonize(iter_pairs=None):
         Can be specified to direct polygonization for particular combinations of dx
         and grids {dx as int}, {gridix as int}. When None, goes through preset list
         of all combos from dx=80 up to dx=1280 (about 35km).
+    iprint : bool, False
     """
     from numpy import pi
 
     def loop_wrapper(args):
         dx, gridix = args
         poissd = pickle.load(open(f'voronoi_grids/{dx}/{str(gridix).zfill(2)}.p', 'rb'))['poissd']
+        
+        # set up SphericalVoronoi
+        xy = poissd.samples.copy()
+        xy[:,1] += pi/2
+
+        centers = []
+        for xy_ in xy:
+            centers.append(SphereCoordinate(*xy_).vec)
+        centers = np.vstack(centers)
+
+        sv = SphericalVoronoi(centers)
+        # sort vertices (optional, helpful for plotting)
+        sv.sort_vertices_of_regions()
 
         # identify polygons that are within interesting boundaries
         lonlat = poissd.samples.copy()
@@ -42,20 +56,20 @@ def polygonize(iter_pairs=None):
         
         # create bounding polygons, the "Voronoi cells"
         polygons = []
-        for i in selectix:
-            try:
-                polygons.append(create_polygon(poissd, i))
-            except Exception:
-                raise Exception(f"Problem with {i}.")
+        for r in [sv.regions[i] for i in selectix]:
+            coords = [SphereCoordinate(*xyz) for xyz in sv.vertices[r]]
+            polygons.append(Polygon([(unwrap_lon((v.phi/pi*180+330)%360), (v.theta-pi/2)/pi*180) for v in coords]))
+
         polygons = gpd.GeoDataFrame({'index':list(range(len(polygons)))},
                                     geometry=polygons,
                                     crs='EPSG:4326',
                                     index=selectix)
-        
+        if iprint: print("Done making polygons.")
+
         # identify all neighbors of each polygon
         neighbors = []
         sindex = polygons.sindex
-        scaled_polygons = polygons['geometry'].scale(1.01,1.01)
+        scaled_polygons = polygons['geometry'].scale(1.001,1.001)
         for i, p in polygons.iterrows():
             # scale polygons by a small factor to account for precision error in determining
             # neighboring polygons; especially important once dx becomes large, say 320
@@ -74,16 +88,19 @@ def polygonize(iter_pairs=None):
             # must save list as string for compatibility with Fiona pickling
             neighbors.append(str(sorted(neighborix))[1:-1])
         polygons['neighbors'] = neighbors
+        if iprint: print("Done finding neighbors.")
 
         # correct errors
         polygons, n_inconsis = check_voronoi_tiles(polygons)
+        if iprint: print("Done checking neighbors.")
         check_overlap(polygons)
+        if iprint: print("Done checking overlap.")
 
         # save
         polygons.to_file(f'voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
         with open(f'voronoi_grids/{dx}/borders_ix{str(gridix).zfill(2)}.p', 'wb') as f:
             pickle.dump({'selectix':selectix}, f)
- 
+            
     if iter_pairs is None:
         # iterate over all preset combinations of dx and dt
         iter_pairs = product([40, 80, 160, 320, 640, 1280], range(10))

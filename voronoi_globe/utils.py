@@ -109,7 +109,6 @@ def check_overlap(gdf, iprint=False):
     ----------
     iprint : bool, False
     """
-
     # load africa
     africa = gpd.read_file('./continent-poly/Africa_main.shp')
     assert africa.crs.name=='WGS 84'

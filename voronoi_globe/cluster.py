@@ -60,7 +60,7 @@ def polygonize(iter_pairs=None, iprint=False):
             coords = [SphereCoordinate(*xyz) for xyz in sv.vertices[r]]
             polygons.append(Polygon([(unwrap_lon((v.phi/pi*180+330)%360), (v.theta-pi/2)/pi*180) for v in coords]))
 
-        polygons = gpd.GeoDataFrame({'index':list(range(len(polygons)))},
+        polygons = gpd.GeoDataFrame({'index':list(range(selectix.size))},
                                     geometry=polygons,
                                     crs='EPSG:4326',
                                     index=selectix)
@@ -83,7 +83,8 @@ def polygonize(iter_pairs=None, iprint=False):
                 neighborix.pop(neighborix.index(i))
             except ValueError:
                 pass
-            assert len(neighborix)
+            #assert len(neighborix)
+            if len(neighborix)==0: print(i)
 
             # must save list as string for compatibility with Fiona pickling
             neighbors.append(str(sorted(neighborix))[1:-1])

@@ -82,7 +82,6 @@ def check_voronoi_tiles(gdf, iprint=False):
     geopandas.GeoDataFrame
     int
     """
-    
     from shapely import wkt
     from shapely.errors import TopologicalError
     
@@ -133,7 +132,6 @@ def check_poisson_disc(poissd, min_dx):
     poissd : PoissonDiscSphere
     min_dx : float
     """
-    
     # min distance surpasses min radius
     for xy in poissd.samples:
         neighbors, dist = poissd.neighbors(xy, return_dist=True)
@@ -153,7 +151,6 @@ def extend_poissd_coarse_grid(dx):
     ----------
     dx : int
     """
-    
     for i in range(10):
         with open(f'voronoi_grids/{dx}/{str(i).zfill(2)}.p','rb') as f:
             poissd = pickle.load(f)['poissd']
@@ -171,7 +168,6 @@ def _extend_poissd_coarse_grid(poissd):
     -------
     PoissonDiscSphere
     """
-
     newpoissd = PoissonDiscSphere(poissd.r,
                                   width_bds=poissd.width,
                                   height_bds=poissd.height,
@@ -192,7 +188,6 @@ def mod_angle(angle, radians=True):
     ----------
     angle : ndarray
     """
-    
     if radians:
         return np.mod(angle+np.pi,2*np.pi)-np.pi
     return np.mod(angle+180,2*180)-180
@@ -210,7 +205,6 @@ def ortho_plane(v):
     ndarray
     ndarray
     """
-    
     assert v.size==3
     
     # Get a first orthogonal vector

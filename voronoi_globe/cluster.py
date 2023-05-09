@@ -47,7 +47,7 @@ def polygonize(iter_pairs=None, iprint=False):
         if dx<=28:
             selectix = np.where((lonlat[:,0]>-30) & (lonlat[:,0]<62) &
                                 (lonlat[:,1]>-45) & (lonlat[:,1]<50))[0]
-        elif dx<=40:
+        elif dx<=57:
             selectix = np.where((lonlat[:,0]>-22.2) & (lonlat[:,0]<55.5) &
                                 (lonlat[:,1]>-39) & (lonlat[:,1]<42))[0]
         else:

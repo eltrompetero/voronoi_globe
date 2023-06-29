@@ -109,7 +109,8 @@ def check_overlap(gdf, iprint=False):
     iprint : bool, False
     """
     # load africa
-    africa = gpd.read_file('./continent-poly/Africa_main.shp')
+    path = '/'.join(__file__.split('/')[:-1])
+    africa = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
     assert africa.crs.name=='WGS 84'
 
     # project to a flat projection that preserves area, Equal Area Cylindrical

@@ -24,7 +24,6 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
     -------
     gpd.GeoDataFrame
     """
-
     assert not (exclude_center and exclude_boundary)
 
     gdf = gpd.read_file(f'{prefix}/voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
@@ -34,15 +33,15 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
     
     # turn neighbor strings into lists
     gdf['neighbors'] = gdf['neighbors'].apply(lambda x: [int(i) for i in x.split(', ')])
-    
     try:
+        path = '/'.join(__file__.split('/')[:-1])
         if exclude_boundary:
-            af = gpd.read_file('continent-poly/Africa_main.shp')
+            af = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
             contained_ix = [af['geometry'].iloc[0].contains(p.buffer(1))
                             for p in gdf['geometry'].values]
             gdf = gdf.loc[contained_ix]
         elif exclude_center:
-            af = gpd.read_file('continent-poly/Africa_main.shp')
+            af = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
             contained_ix = [not af['geometry'].iloc[0].contains(p.buffer(1))
                             for p in gdf['geometry'].values]
             gdf = gdf.loc[contained_ix]

@@ -51,6 +51,7 @@ kwargs = {'name':'voronoi_globe',
                               'numpy',
                               'numba>=0.45.1,<1',
                               'dill'],
+          'package_data':{'voronoi_globe':['continent-poly/Africa_main.*']},
           'include_package_data':True}  # see MANIFEST.in
 
 setup(**kwargs)

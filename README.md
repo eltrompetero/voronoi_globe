@@ -9,6 +9,6 @@ $ pip install dist/*
 
 # Use
 ```bash
-$ cp scripts create_poissd.py .
-$ python create_poissd.py 0
+$ cp scripts create_vcells.py .
+$ python create_vcells.py 0
 ```

@@ -10,6 +10,6 @@ $ pip install dist/*
 
 # Use
 ```bash
-$ cp scripts create_vcells.py .
+$ cp scripts/create_vcells.py .
 $ python create_vcells.py 0
 ```

@@ -101,29 +101,56 @@ def check_voronoi_tiles(gdf, iprint=False):
     if iprint: print("Done with correcting asymmetric neighbors.")
     return gdf, n_inconsis
 
+#### ADD NEW CHECKS FOR NEW REGIONS HERE ####
+
+# def check_overlap(gdf, iprint=False):
+#     """Check overlap with all of africa.
+
+#     Parameters
+#     ----------
+#     iprint : bool, False
+#     """
+#     # load africa
+#     path = '/'.join(__file__.split('/')[:-1])
+#     africa = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
+#     assert africa.crs.name=='WGS 84'
+
+#     # project to a flat projection that preserves area, Equal Area Cylindrical
+#     africa = africa.to_crs('+proj=cea')
+    
+#     # check that intersection w/ voronoi area is very close to total area
+#     a1 = sum([i.intersection(africa.iloc[0].geometry).area
+#               for i in gdf['geometry'].to_crs('+proj=cea')])
+#     a2 = africa.geometry.area
+
+#     assert np.isclose(a1, a2, rtol=1e-7), (a1-a2)
+ 
+#     if iprint: print("Done with checking overlap with Africa.")
+
 def check_overlap(gdf, iprint=False):
-    """Check overlap with all of africa.
+    """Check overlap with all of mexico.
 
     Parameters
     ----------
     iprint : bool, False
     """
-    # load africa
-    path = '/'.join(__file__.split('/')[:-1])
-    africa = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
-    assert africa.crs.name=='WGS 84'
+    # load mexico
+    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    mexico = world[world['name'] == 'Mexico']
 
     # project to a flat projection that preserves area, Equal Area Cylindrical
-    africa = africa.to_crs('+proj=cea')
+    mexico = mexico.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    a1 = sum([i.intersection(africa.iloc[0].geometry).area
+    a1 = sum([i.intersection(mexico.iloc[0].geometry).area
               for i in gdf['geometry'].to_crs('+proj=cea')])
-    a2 = africa.geometry.area
+    a2 = mexico.geometry.area
 
     assert np.isclose(a1, a2, rtol=1e-7), (a1-a2)
  
-    if iprint: print("Done with checking overlap with Africa.")
+    if iprint: print("Done with checking overlap with Mexico.")
+
+####
 
 def check_poisson_disc(poissd, min_dx):
     """Check PoissonDiscSphere grid.

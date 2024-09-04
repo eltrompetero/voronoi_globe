@@ -14,13 +14,21 @@ from itertools import product
 from voronoi_globe import *
 
 
-# These bounds have been tuned to cover the African continent. They would have to be
-# changed for other areas.
-WIDTH = (0.05235987755982988, 1.6406094968746698)
-HEIGHT = (-0.7853981633974483, 0.8203047484373349)
+region = "mexico"
 
-LARGEWIDTH = (np.pi*2-.31, 1.92)
-LARGEHEIGHT = (-1, 1.1)
+if(region=="africa"):
+    WIDTH = (0.05235987755982988, 1.6406094968746698)
+    HEIGHT = (-0.7853981633974483, 0.8203047484373349)
+
+    LARGEWIDTH = (np.pi*2-.31, 1.92)
+    LARGEHEIGHT = (-1, 1.1)
+elif(region=="mexico"):
+    WIDTH = (4.3, 5.6)
+    HEIGHT = (-0.1, 1)
+
+    LARGEWIDTH = (4.3, 2*pi-0.05)
+    LARGEHEIGHT = (-0.1, 1)
+
 
 def create_one_grid(gridix, dx):
     assert 100>=gridix>=0
@@ -60,7 +68,8 @@ def main(gridix):
     pi/20, which then forms the basis for a coarse grid to speed up finer grids in
     nested chain.
     """
-    for dx in [20,40,80,160,320,640,1280,28,57,113,226,453,905]:
+    # for dx in [20,40,80,160,320,640,1280,28,57,113,226,453,905]:
+    for dx in [20,40]:
         try:
             os.makedirs(f'./voronoi_grids/{dx}')
         except OSError:
@@ -80,6 +89,6 @@ if __name__=='__main__':
     print("Done.")
     
     print("Drawing boundaries around Voronoi cells...")
-    polygonize(product([int(i) for i in os.listdir('./voronoi_grids')], gridix))
+    polygonize(product([int(i) for i in os.listdir('./voronoi_grids')], gridix), iprint=False)
     print("Done.")
 

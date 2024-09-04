@@ -44,15 +44,32 @@ def polygonize(iter_pairs=None, iprint=False):
         lonlat = poissd.samples.copy()
         for i in range(len(lonlat)):
             lonlat[i] = unwrap_lon((lonlat[i,0]/pi*180 + 330)%360), lonlat[i,1]/pi*180
+
+        ##### ADD NEW BOUNDS FOR NEW REGIONS HERE #####
+
+        # if dx<=28:
+        #     selectix = np.where((lonlat[:,0]>-30) & (lonlat[:,0]<62) &
+        #                         (lonlat[:,1]>-45) & (lonlat[:,1]<50))[0]
+        # elif dx<=57:
+        #     selectix = np.where((lonlat[:,0]>-22.2) & (lonlat[:,0]<55.5) &
+        #                         (lonlat[:,1]>-39) & (lonlat[:,1]<42))[0]
+        # else:
+        #     selectix = np.where((lonlat[:,0]>-19.7) & (lonlat[:,0]<53.5) &
+        #                         (lonlat[:,1]>-37) & (lonlat[:,1]<40))[0]
+            
         if dx<=28:
-            selectix = np.where((lonlat[:,0]>-30) & (lonlat[:,0]<62) &
-                                (lonlat[:,1]>-45) & (lonlat[:,1]<50))[0]
+            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
+                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
         elif dx<=57:
-            selectix = np.where((lonlat[:,0]>-22.2) & (lonlat[:,0]<55.5) &
-                                (lonlat[:,1]>-39) & (lonlat[:,1]<42))[0]
+            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
+                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
         else:
-            selectix = np.where((lonlat[:,0]>-19.7) & (lonlat[:,0]<53.5) &
-                                (lonlat[:,1]>-37) & (lonlat[:,1]<40))[0]
+            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
+                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
+        
+        ####
+        
+        # selectix = np.array([i for i in range(len(lonlat))])    ## instead of setting bounds for centers around which boundaries will be made, all the centers will get boundary
         
         # create bounding polygons, the "Voronoi cells"
         polygons = []

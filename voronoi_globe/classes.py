@@ -90,9 +90,10 @@ class PoissonDiscSphere():
         iprint : bool, True
         rng : np.random.RandomState, None
         """
+        
         assert r>0, r
-        assert 0<=width_bds[0]<2*pi and 0<=width_bds[1]<2*pi
-        assert -pi/2<=height_bds[0]<height_bds[1]<=pi/2
+        assert 0<=width_bds[0]<2*pi and 0<=width_bds[1]<2*pi, "width bound error"
+        assert -pi/2<=height_bds[0]<height_bds[1]<=pi/2, "height bound error"
 
         self.width, self.height = width_bds, height_bds
         self.r = r

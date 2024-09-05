@@ -10,7 +10,7 @@ from .classes import SphereCoordinate, GreatCircle, GreatCircleIntersect, Vorono
 from .utils import *
 
 
-def polygonize(iter_pairs=None, iprint=False):
+def polygonize(iter_pairs=None, region=None ,iprint=False):
     """Create polygons denoting boundaries of Voronoi grid.
 
     Parameters
@@ -45,30 +45,33 @@ def polygonize(iter_pairs=None, iprint=False):
         for i in range(len(lonlat)):
             lonlat[i] = unwrap_lon((lonlat[i,0]/pi*180 + 330)%360), lonlat[i,1]/pi*180
 
-        ##### ADD NEW BOUNDS FOR NEW REGIONS HERE #####
+        #### ADD NEW BOUNDS FOR NEW REGIONS HERE #####
 
-        # if dx<=28:
-        #     selectix = np.where((lonlat[:,0]>-30) & (lonlat[:,0]<62) &
-        #                         (lonlat[:,1]>-45) & (lonlat[:,1]<50))[0]
-        # elif dx<=57:
-        #     selectix = np.where((lonlat[:,0]>-22.2) & (lonlat[:,0]<55.5) &
-        #                         (lonlat[:,1]>-39) & (lonlat[:,1]<42))[0]
-        # else:
-        #     selectix = np.where((lonlat[:,0]>-19.7) & (lonlat[:,0]<53.5) &
-        #                         (lonlat[:,1]>-37) & (lonlat[:,1]<40))[0]
-            
-        if dx<=28:
-            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
-                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
-        elif dx<=57:
-            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
-                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
-        else:
-            selectix = np.where((lonlat[:,0]>-125) & (lonlat[:,0]<-75) &
-                                (lonlat[:,1]>5) & (lonlat[:,1]<40))[0]
-        
+        if region=="africa":
+            if dx<=28:
+                lat_bounds = (-30,62)
+                lng_bounds = (-45,50)
+            elif dx<=57:
+                lat_bounds = (-22.2,55.5)
+                lng_bounds = (-39,42)
+            else:
+                lat_bounds = (-19.7,53.5)
+                lng_bounds = (-37,40)
+        elif region=="mexico":
+            if dx<=28:
+                lat_bounds = (-125,-75)
+                lng_bounds = (5,40)
+            elif dx<=57:
+                lat_bounds = (-125,-75)
+                lng_bounds = (5,40)
+            else:
+                lat_bounds = (-125,-75)
+                lng_bounds = (5,40)
+
         ####
-        
+
+        selectix = np.where((lonlat[:,0]>lat_bounds[0]) & (lonlat[:,0]<lat_bounds[1]) &
+                            (lonlat[:,1]>lng_bounds[0]) & (lonlat[:,1]<lng_bounds[1]))[0]
         # selectix = np.array([i for i in range(len(lonlat))])    ## instead of setting bounds for centers around which boundaries will be made, all the centers will get boundary
         
         # create bounding polygons, the "Voronoi cells"
@@ -111,7 +114,7 @@ def polygonize(iter_pairs=None, iprint=False):
         # correct errors
         polygons, n_inconsis = check_voronoi_tiles(polygons)
         if iprint: print("Done checking neighbors.")
-        check_overlap(polygons)
+        check_overlap(polygons, region=region)
         if iprint: print("Done checking overlap.")
 
         # save

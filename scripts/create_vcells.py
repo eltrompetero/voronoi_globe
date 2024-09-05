@@ -14,7 +14,11 @@ from itertools import product
 from voronoi_globe import *
 
 
-region = "mexico"
+# In order to add more regions. First change the WIDTH and HEIGHT variables to the desired region.
+# Then change the bounds on cluster.py according to the desired region.
+# Then add overlap check for that region in utils.py.
+
+region = "africa"
 
 if(region=="africa"):
     WIDTH = (0.05235987755982988, 1.6406094968746698)
@@ -89,6 +93,6 @@ if __name__=='__main__':
     print("Done.")
     
     print("Drawing boundaries around Voronoi cells...")
-    polygonize(product([int(i) for i in os.listdir('./voronoi_grids')], gridix), iprint=False)
+    polygonize(product([int(i) for i in os.listdir('./voronoi_grids')], gridix), region=region ,iprint=False)
     print("Done.")
 

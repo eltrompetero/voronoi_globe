@@ -72,8 +72,7 @@ def main(gridix):
     pi/20, which then forms the basis for a coarse grid to speed up finer grids in
     nested chain.
     """
-    # for dx in [20,40,80,160,320,640,1280,28,57,113,226,453,905]:
-    for dx in [20,40]:
+    for dx in [20,40,80,160,320,640,1280,28,57,113,226,453,905]:
         try:
             os.makedirs(f'./voronoi_grids/{dx}')
         except OSError:

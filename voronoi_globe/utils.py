@@ -101,29 +101,38 @@ def check_voronoi_tiles(gdf, iprint=False):
     if iprint: print("Done with correcting asymmetric neighbors.")
     return gdf, n_inconsis
 
-def check_overlap(gdf, iprint=False):
-    """Check overlap with all of africa.
+#### ADD NEW CHECKS FOR NEW REGIONS IN THIS FUNCTION ####
+
+def check_overlap(gdf, region, iprint=False):
+    """Check overlap with all of mexico.
 
     Parameters
     ----------
     iprint : bool, False
     """
-    # load africa
-    path = '/'.join(__file__.split('/')[:-1])
-    africa = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
-    assert africa.crs.name=='WGS 84'
+
+    # load region shp
+    if(region=="africa"):
+        path = '/'.join(__file__.split('/')[:-1])
+        region_shp = gpd.read_file(f'{path}/continent-poly/Africa_main.shp')
+        assert region_shp.crs.name=='WGS 84'
+    elif(region=="mexico"):
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        region_shp = world[world['name'] == 'Mexico']
 
     # project to a flat projection that preserves area, Equal Area Cylindrical
-    africa = africa.to_crs('+proj=cea')
+    region_shp = region_shp.to_crs('+proj=cea')
     
     # check that intersection w/ voronoi area is very close to total area
-    a1 = sum([i.intersection(africa.iloc[0].geometry).area
+    a1 = sum([i.intersection(region_shp.iloc[0].geometry).area
               for i in gdf['geometry'].to_crs('+proj=cea')])
-    a2 = africa.geometry.area
+    a2 = region_shp.geometry.area
 
     assert np.isclose(a1, a2, rtol=1e-7), (a1-a2)
  
-    if iprint: print("Done with checking overlap with Africa.")
+    if iprint: print(f"Done with checking overlap with the region of {region}.")
+
+####
 
 def check_poisson_disc(poissd, min_dx):
     """Check PoissonDiscSphere grid.

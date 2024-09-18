@@ -77,6 +77,16 @@ def polygonize(iter_pairs=None, region=None ,iprint=False):
             else:
                 lat_bounds = (-125,-25)
                 lng_bounds = (-70,40)
+        elif region=="india":
+            if dx<=28:
+                lat_bounds = (60,105)
+                lng_bounds = (0,45)
+            elif dx<=57:
+                lat_bounds = (60,105)
+                lng_bounds = (0,45)
+            else:
+                lat_bounds = (60,105)
+                lng_bounds = (0,45)
         ####
 
         selectix = np.where((lonlat[:,0]>lat_bounds[0]) & (lonlat[:,0]<lat_bounds[1]) &

@@ -18,7 +18,10 @@ from voronoi_globe import *
 # Then change the bounds on cluster.py according to the desired region.
 # Then add overlap check for that region in utils.py.
 
-region = "africa"
+### Here width and height are the bounds for geenrating random points (see PoissonDiscSphere class's __init__ method)
+### Larger region will significantly slow down the code. So adjusting for region of interest is recommended.
+
+region = "india"
 
 if(region=="africa"):
     WIDTH = (0.05235987755982988, 1.6406094968746698)
@@ -32,6 +35,24 @@ elif(region=="mexico"):
 
     LARGEWIDTH = (4.3, 2*pi-0.05)
     LARGEHEIGHT = (-0.1, 1)
+elif(region=="latin_america"):
+    WIDTH = (4.3, 5.6)
+    HEIGHT = (-0.85, 1)
+
+    LARGEWIDTH = (4.3, 0.2)
+    LARGEHEIGHT = (-1.5, 1)
+elif(region=="india"):
+    WIDTH = (4.3, 5.6)
+    HEIGHT = (-0.85, 1)
+
+    LARGEWIDTH = (1.1, 3)
+    LARGEHEIGHT = (-0.5, 1.5)
+else: ## whole globe (latlog bounds and overlap not set yet)
+    WIDTH = (0, 2*pi-0.01)
+    HEIGHT = (-pi/2, (pi/2)-0.01)
+
+    LARGEWIDTH =  (0, 2*pi-0.01)
+    LARGEHEIGHT = (-pi/2, (pi/2)-0.01)
 
 
 def create_one_grid(gridix, dx):

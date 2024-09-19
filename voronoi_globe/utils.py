@@ -102,7 +102,6 @@ def check_voronoi_tiles(gdf, iprint=False):
     return gdf, n_inconsis
 
 #### ADD NEW CHECKS FOR NEW REGIONS IN THIS FUNCTION ####
-
 def check_overlap(gdf, region, iprint=False):
     """Check overlap with all of mexico.
 
@@ -119,6 +118,19 @@ def check_overlap(gdf, region, iprint=False):
     elif(region=="mexico"):
         world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
         region_shp = world[world['name'] == 'Mexico']
+    elif(region=="latin_america"):
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        latin_america_countries = [
+            'Argentina', 'Belize', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Cuba', 
+            'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', 'Honduras', 'Mexico', 
+            'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Uruguay', 'Venezuela', 'Haiti', 'Jamaica',
+            'Guyana', 'Suriname',"Falkland Is.","Dominican Rep.","Puerto Rico","Trinidad and Tobago"
+        ]
+        latin_america = world[world['name'].isin(latin_america_countries)]
+        region_shp = latin_america.dissolve()
+    elif(region=="india"):
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        region_shp = world[world['name'] == 'India']
 
     # project to a flat projection that preserves area, Equal Area Cylindrical
     region_shp = region_shp.to_crs('+proj=cea')
@@ -131,7 +143,6 @@ def check_overlap(gdf, region, iprint=False):
     assert np.isclose(a1, a2, rtol=1e-7), (a1-a2)
  
     if iprint: print(f"Done with checking overlap with the region of {region}.")
-
 ####
 
 def check_poisson_disc(poissd, min_dx):

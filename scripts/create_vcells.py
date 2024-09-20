@@ -21,7 +21,7 @@ from voronoi_globe import *
 ### Here width and height are the bounds for geenrating random points (see PoissonDiscSphere class's __init__ method)
 ### Larger region will significantly slow down the code. So adjusting for region of interest is recommended.
 
-region = "india"
+region = "latin_america"
 
 if(region=="africa"):
     WIDTH = (0.05235987755982988, 1.6406094968746698)
@@ -36,14 +36,14 @@ elif(region=="mexico"):
     LARGEWIDTH = (4.3, 2*pi-0.05)
     LARGEHEIGHT = (-0.1, 1)
 elif(region=="latin_america"):
-    WIDTH = (4.3, 5.6)
-    HEIGHT = (-0.85, 1)
+    WIDTH = (4.3, 0.2)
+    HEIGHT = (-1.5, 1)
 
     LARGEWIDTH = (4.3, 0.2)
     LARGEHEIGHT = (-1.5, 1)
 elif(region=="india"):
-    WIDTH = (4.3, 5.6)
-    HEIGHT = (-0.85, 1)
+    WIDTH = (1.1, 3)
+    HEIGHT = (-0.5, 1.5)
 
     LARGEWIDTH = (1.1, 3)
     LARGEHEIGHT = (-0.5, 1.5)

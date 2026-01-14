@@ -2,19 +2,21 @@
 # Interface functions.
 # Author: Eddie Lee, edlee@csh.ac.at
 # ====================================================================================== #
-from fiona.errors import DriverError
+# from fiona.errors import DriverError
+from warnings import warn
 
 from .utils import *
 
 
 
-def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_center=False):
+def load_voronoi(dx, gridix=0, region="africa", prefix='.', exclude_boundary=False, exclude_center=False):
     """Load GeoPandas DataFrame and apply proper index before returning.
 
     Parameters
     ----------
     dx : int
     gridix : int, 0
+    region : str, 'africa'
     prefix : str, ''
         Directory prefix.
     exclude_boundary : bool, False
@@ -26,8 +28,8 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
     """
     assert not (exclude_center and exclude_boundary)
 
-    gdf = gpd.read_file(f'{prefix}/voronoi_grids/{dx}/borders{str(gridix).zfill(2)}.shp')
-    with open(f'{prefix}/voronoi_grids/{dx}/borders_ix{str(gridix).zfill(2)}.p', 'rb') as f:
+    gdf = gpd.read_file(f'{prefix}/voronoi_grids_{region}/{dx}/borders{str(gridix).zfill(2)}.shp')
+    with open(f'{prefix}/voronoi_grids_{region}/{dx}/borders_ix{str(gridix).zfill(2)}.p', 'rb') as f:
         ix = pickle.load(f)['selectix']
     gdf.set_index(ix, inplace=True)
     
@@ -45,11 +47,13 @@ def load_voronoi(dx, gridix=0, prefix='.', exclude_boundary=False, exclude_cente
             contained_ix = [not af['geometry'].iloc[0].contains(p.buffer(1))
                             for p in gdf['geometry'].values]
             gdf = gdf.loc[contained_ix]
-    except DriverError:
+    # except DriverError:
+    #     warn("Africa shapefile cannot be found. Boundary filtering not done.")
+    except FileNotFoundError:
         warn("Africa shapefile cannot be found. Boundary filtering not done.")
     return gdf
 
-def load_centers(dx, gridix=0, prefix='.'):
+def load_centers(dx, gridix=0, region="africa", prefix='.'):
     """Load voronoi centers as ndarray, but put them into same reference frame as
     polygons.
 
@@ -57,6 +61,7 @@ def load_centers(dx, gridix=0, prefix='.'):
     ----------
     dx : int
     gridix : int, 0
+    region : str, 'africa'
     prefix : str, '.'
 
     Returns
@@ -64,7 +69,7 @@ def load_centers(dx, gridix=0, prefix='.'):
     np.ndarray
     """
     
-    with open(f'{prefix}/voronoi_grids/{dx}/{str(gridix).zfill(2)}.p', 'rb') as f:
+    with open(f'{prefix}/voronoi_grids_{region}/{dx}/{str(gridix).zfill(2)}.p', 'rb') as f:
         poissd = pickle.load(f)['poissd']
 
     # must unwrap centers to test for presence in cell

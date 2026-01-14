@@ -131,6 +131,9 @@ def check_overlap(gdf, region, iprint=False):
     elif(region=="india"):
         world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
         region_shp = world[world['name'] == 'India']
+    elif(region=="somalia"):
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        region_shp = world[world['name'] == 'Somalia']
 
     # project to a flat projection that preserves area, Equal Area Cylindrical
     region_shp = region_shp.to_crs('+proj=cea')
